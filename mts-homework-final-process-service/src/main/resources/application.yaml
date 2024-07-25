@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: mts-homework-final-process
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/final_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+
+  jpa:
+    properties:
+      hibernate:
+        format_sql: false
+    database: POSTGRESQL
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  cloud:
+    function:
+      definition: consumeOrderMessage
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+          auto-create-topics: false
+      bindings:
+        consumeOrderMessage-in-0:
+          destination: final.order
+          contentType: application/json
+          group: ${spring.application.name}-group
+          useNativeDecoding: true
+          consumer:
+            autoCommitOffset: false
+            startOffset: latest
+            ackMode: MANUAL
+            backOffInitialInterval: 10000
+            maxAttempts: 5
+            enableDlq: false
+
+server:
+  port: 8088
+  error:
+    include-message: always
+
+camunda:
+  bpm:
+    admin-user:
+      id: admin
+      password: admin
+    application:
+      delete-upon-undeploy: false
+      scan-for-process-definitions: false
+      deploy-changed-only: true
+      resume-previous-versions: true
+      resume-previous-by: a value
+    job-execution:
+      enabled: true
+    metrics:
+      enabled: false
+      db-reporter-activate: false
+
+camunda.bpm.auto-deployment-enabled: false
